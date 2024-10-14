@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RPN Calculator</title>
+</head>
+<body>
+    <h1>RPN Calculator</h1>
+
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+
+    <p>Use this if you want to use infix calculation method like: (1 + 1) * 2</p>
+    <form action="/calculate-infix/" method="post">
+        <label for="expression">Enter Expression (Infix):</label>
+        <input type="text" id="expression" name="expression">
+        <button type="submit">Calculate Infix</button>
+    </form>
+
+    <p>Or use this if you want to use postfix calculation method like: 1 1 + 2 * or 11+2*</p>
+    <form action="/calculate-postfix/" method="post">
+        <label for="expression">Enter Expression (Postfix):</label>
+        <input type="text" id="expression" name="expression">
+        <button type="submit">Calculate Postfix</button>
+    </form>
+
+    <form action="/export-csv-data/" method="get">
+        <button type="submit">Export Data as CSV</button>
+    </form>
+</body>
+</html>

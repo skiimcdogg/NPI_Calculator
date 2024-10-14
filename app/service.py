@@ -6,8 +6,10 @@ from .models import Calculation
 from fastapi import HTTPException
 from .repository import CalculationRepository
 
+
 class Services:
 
+    @staticmethod
     def apply_operators(operators, values):
         operator = operators.pop()
         value_2 = values.pop()
@@ -21,7 +23,7 @@ class Services:
         elif operator == "/":
             values.append(value_1 / value_2)
 
-
+    @staticmethod
     def operator_priority(operator: str) -> int:
         if operator in ("+", "-"):
             return 1
@@ -29,7 +31,8 @@ class Services:
             return 2
         return 0
 
-    async def calculate_infix_operation(self, expression: str) -> Dict[str, str]:
+    @staticmethod
+    async def calculate_infix_operation(expression: str) -> Dict[str, str]:
         try:
             operators = []
             values = []
@@ -50,16 +53,16 @@ class Services:
                     i -= 1
                 elif expression[i] == ")":
                     while operators and operators[-1] != "(":
-                        self.apply_operators(operators, values)
+                        Services.apply_operators(operators, values)
                     operators.pop()
                 else:
-                    while (operators and self.operator_priority(operators[-1]) >= self.operator_priority(expression[i])):
-                        self.apply_operators(operators, values)
+                    while (operators and Services.operator_priority(operators[-1]) >= Services.operator_priority(expression[i])):
+                        Services.apply_operators(operators, values)
                     operators.append(expression[i])
                 i += 1
 
             while operators:
-                self.apply_operators(operators, values)
+                Services.apply_operators(operators, values)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Invalid operation: {e}")
         
@@ -69,6 +72,7 @@ class Services:
 
         return {"operation": expression, "result": result}
     
+    @staticmethod
     async def calculate_postfix_operation(expression: str) -> float:
         try:
             pile = []
@@ -102,9 +106,10 @@ class Services:
 
         return {"operation": expression, "result": result}
     
-    def get_csv_data_from_db():
+    @staticmethod
+    async def get_csv_data_from_db():
         try:
-            db_data = CalculationRepository.get_all_db_data()
+            db_data = await CalculationRepository.get_all_db_data()
 
             root = tk.Tk()
             root.withdraw()
@@ -122,6 +127,7 @@ class Services:
 
                     for calculation in db_data:
                         writer.writerow([calculation.id, calculation.operation, calculation.result, calculation.created_at])
-            return "Data exported in CSV successfully !"
+                return "Data exported in CSV successfully !"
+            return "No file path provided for CSV export."
         except Exception as e:
             raise Exception(f"Failed to export CSV data: {str(e)}")

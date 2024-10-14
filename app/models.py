@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from bson import ObjectId
 from datetime import datetime
 from typing import Optional
@@ -10,20 +10,30 @@ class PyObjectId(ObjectId):
 
     @classmethod
     def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError('Invalid ObjectId')
-        return ObjectId(v)
+        if not isinstance(v, ObjectId):
+            try:
+                return ObjectId(v)
+            except Exception:
+                raise ValueError(f"Invalid ObjectId: {v}")
+        return v
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
+    def __get_pydantic_json_schema__(cls, field_schema):
         field_schema.update(type="string")
 
 class Calculation(BaseModel):
-    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
+    id: Optional[str] = Field(default=None, alias="_id")
     operation: str
     result: str
     created_at: int = Field(default_factory=lambda: int(datetime.now().timestamp()))
 
+    @model_validator(mode="before")
+    def convert_id_to_string(cls, values):
+        # Convertir l'ObjectId en chaîne avant la validation
+        if "_id" in values and isinstance(values["_id"], ObjectId):
+            values["_id"] = str(values["_id"])
+        return values
+
     class Config:
-        allow_population_by_field_name = True
+        populate_by_name = True
         json_encoders = {ObjectId: str}

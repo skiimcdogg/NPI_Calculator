@@ -29,5 +29,13 @@
     <form action="/export-csv-data/" method="get">
         <button type="submit">Export Data as CSV</button>
     </form>
+
+    <script>
+        if (window.location.search.includes("message")) {
+            const url = new URL(window.location);
+            url.searchParams.delete("message");
+            window.history.replaceState(null, "", url);
+        }
+    </script>
 </body>
 </html>

@@ -2,7 +2,12 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from app.routes import router as item_router
 from app.db import create_collection_if_not_exists, client
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+
+MONGO_HOST = os.getenv("MONGO_HOST")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,4 +22,4 @@ app.include_router(item_router)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host=MONGO_HOST, port=8000)

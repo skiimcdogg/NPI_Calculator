@@ -1,36 +1,35 @@
-from fastapi import FastAPI, Request, Form
+from fastapi import APIRouter, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
-from starlette.responses import TemplateResponse
 from .service import Services
 
-app = FastAPI()
+router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-@app.post("/calculate-infix/")
+@router.post("/calculate-infix/")
 async def perform_calculation_infix(expression: str = Form(...)) -> RedirectResponse:
     try:
-        result = Services.calculate_infix_operation(expression)
-        return RedirectResponse(url=f"/interface/?message=Infix calculation result: {result['result']}")
+        result = await Services.calculate_infix_operation(expression)
+        return RedirectResponse(url=f"/interface/?message=Infix calculation result: {result['result']}", status_code=303)
     except Exception as e:
-        return RedirectResponse(url=f"/interface/?message=Error in Infix calculation: {str(e)}")
+        return RedirectResponse(url=f"/interface/?message=Error in Infix calculation: {str(e)}", status_code=303)
 
-@app.post("/calculate-postfix/")
+@router.post("/calculate-postfix/")
 async def perform_calculation_postfix(expression: str = Form(...)) -> RedirectResponse:
     try:
-        result = Services.calculate_postfix_operation(expression)
-        return RedirectResponse(url=f"/interface/?message=Postfix calculation result: {result['result']}")
+        result = await Services.calculate_postfix_operation(expression)
+        return RedirectResponse(url=f"/interface/?message=Postfix calculation result: {result['result']}", status_code=303)
     except Exception as e:
-        return RedirectResponse(url=f"/interface/?message=Error in Postfix calculation: {str(e)}")
+        return RedirectResponse(url=f"/interface/?message=Error in Postfix calculation: {str(e)}", status_code=303)
 
-@app.get("/export-csv-data/")
+@router.get("/export-csv-data/")
 async def get_csv_data_from_db(request: Request) -> RedirectResponse:
     try:
-        result = Services.get_csv_data_from_db()
-        return RedirectResponse(url=f"/interface/?message=Data exported successfully")
+        await Services.get_csv_data_from_db()
+        return RedirectResponse(url=f"/interface/?message=Data exported successfully", status_code=303)
     except Exception as e:
-        return RedirectResponse(url=f"/interface/?message=Error during exporting data: {str(e)}")
+        return RedirectResponse(url=f"/interface/?message=Error during exporting data: {str(e)}", status_code=303)
 
-@app.get("/interface/")
-async def render_interface(request: Request, message: str = "") -> TemplateResponse:
+@router.get("/interface/")
+async def render_interface(request: Request, message: str = ""):
     return templates.TemplateResponse("interface.html", {"request": request, "message": message})

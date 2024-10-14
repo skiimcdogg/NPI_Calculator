@@ -7,14 +7,19 @@ from .service import Services
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-@app.post("/calculate_infix/")
+@app.post("/calculate-infix/")
 async def perform_calculation(expression: str) -> Dict[str, str]:
     result = Services.calculate_infix_operation(expression)
     return result
 
-@app.post("/calculate_postfix/")
+@app.post("/calculate-postfix/")
 async def perform_calculation(expression: str) -> Dict[str, str]:
     result = Services.calculate_postfix_operation(expression)
+    return result
+
+@app.get("/export-csv-data/")
+async def get_csv_data_from_db(expression: str) -> Dict[str, str]:
+    result = Services.get_csv_data_from_db()
     return result
 
 @app.get("/interface/")

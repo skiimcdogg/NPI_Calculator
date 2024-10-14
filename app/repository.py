@@ -9,7 +9,7 @@ class CalculationRepository:
         await calculations_collection.insert_one(calculation_dict)
         print("Calculation inserted")
 
-    # @staticmethod
-    # async def get_calculations(limit: int = 100):
-    #     calculations = await calculations_collection.find().to_list(limit)
-    #     return [Calculation(**calc) for calc in calculations]
+    @staticmethod
+    async def get_all_db_data() -> list:
+        calculations = await calculations_collection.find().to_list()
+        return [Calculation(**calc) for calc in calculations]

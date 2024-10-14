@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Form
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from .service import Services
 
 router = APIRouter()
@@ -25,8 +25,13 @@ async def perform_calculation_postfix(expression: str = Form(...)) -> RedirectRe
 @router.get("/export-csv-data/")
 async def get_csv_data_from_db(request: Request) -> RedirectResponse:
     try:
-        await Services.get_csv_data_from_db()
-        return RedirectResponse(url=f"/interface/?message=Data exported successfully", status_code=303)
+        file_path = await Services.get_csv_data_from_db()
+        return FileResponse(path=file_path, filename="exported_data.csv", media_type='application/csv')
+        # -------------------------------------------
+        # FOR TESTING LOCAL WITHOUT DOCKER ENVIRONMENT
+        # result = Services.get_csv_data_from_db()
+        # return RedirectResponse(url=f"/interface/?message=Data exported successfully")
+        # -----------------------------------------
     except Exception as e:
         return RedirectResponse(url=f"/interface/?message=Error during exporting data: {str(e)}", status_code=303)
 

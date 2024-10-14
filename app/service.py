@@ -1,10 +1,15 @@
+from datetime import datetime, timezone
 from typing import Dict
 import tkinter as tk
 import csv
+import pytz
+import os
 from tkinter import filedialog
 from .models import Calculation
 from fastapi import HTTPException
 from .repository import CalculationRepository
+
+EXPORT_DIR = "/app/exports"
 
 
 class Services:
@@ -109,25 +114,50 @@ class Services:
     @staticmethod
     async def get_csv_data_from_db():
         try:
+            if not os.path.exists(EXPORT_DIR):
+                os.makedirs(EXPORT_DIR)
+
+            file_path = os.path.join(EXPORT_DIR, "exported_data.csv")
+
             db_data = await CalculationRepository.get_all_db_data()
+            local_tz = pytz.timezone('Europe/Paris')
 
-            root = tk.Tk()
-            root.withdraw()
-    
-            file_path = filedialog.asksaveasfilename(
-                defaultextension=".csv",
-                filetypes=[("CSV files", ".csv"), ("All files", "*.*")],
-                title="Save as..."
-            )
+            with open(file_path, mode="w", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow(["id", "operation", "result", "created_at"])
 
-            if file_path:
-                with open(file_path, mode="w", newline="", encoding="utf-8") as file:
-                    writer = csv.writer(file)
-                    writer.writerow(["id", "operation", "result", "created_at"])
+                for calculation in db_data:
+                    date_created_utc = datetime.fromtimestamp(calculation.created_at, tz=timezone.utc)
+                    date_created_local = date_created_utc.astimezone(local_tz)
+                    date_created_str = date_created_local.strftime('%Y-%m-%d %H:%M:%S')
+                    writer.writerow([calculation.id, calculation.operation, calculation.result, date_created_str])
 
-                    for calculation in db_data:
-                        writer.writerow([calculation.id, calculation.operation, calculation.result, calculation.created_at])
-                return "Data exported in CSV successfully !"
-            return "No file path provided for CSV export."
+            return file_path 
         except Exception as e:
             raise Exception(f"Failed to export CSV data: {str(e)}")
+        # -----------------------------------------------
+        # FOR TESTING LOCAL WITHOUT DOCKER ENVIRONMENT
+        # try:
+        #     db_data = await CalculationRepository.get_all_db_data()
+
+        #     root = tk.Tk()
+        #     root.withdraw()
+    
+        #     file_path = filedialog.asksaveasfilename(
+        #         defaultextension=".csv",
+        #         filetypes=[("CSV files", ".csv"), ("All files", "*.*")],
+        #         title="Save as..."
+        #     )
+
+        #     if file_path:
+        #         with open(file_path, mode="w", newline="", encoding="utf-8") as file:
+        #             writer = csv.writer(file)
+        #             writer.writerow(["id", "operation", "result", "created_at"])
+
+        #             for calculation in db_data:
+        #                 writer.writerow([calculation.id, calculation.operation, calculation.result, calculation.created_at])
+        #         return "Data exported in CSV successfully !"
+        #     return "No file path provided for CSV export."
+        # except Exception as e:
+        #     raise Exception(f"Failed to export CSV data: {str(e)}")
+        # -----------------------------------------------

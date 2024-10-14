@@ -1,4 +1,7 @@
 from typing import Dict
+from .models import Calculation
+from fastapi import HTTPException
+from .repository import CalculationRepository
 
 class Services:
 
@@ -23,59 +26,75 @@ class Services:
             return 2
         return 0
 
-    def calculate_infix_operation(self, expression: str) -> Dict[str, str]:
-        operators = []
-        values = []
-        i = 0
+    async def calculate_infix_operation(self, expression: str) -> Dict[str, str]:
+        try:
+            operators = []
+            values = []
+            i = 0
 
-        while i < len(expression):
-            if expression[i] == " ":
-                i += 1
-                continue
-            elif expression[i] == "(":
-                operators.append("(")
-            elif expression[i].isdigit():
-                value = 0
-                while i < len(expression) and expression[i].isdigit():
-                    value = (value * 10) + int(expression[i])
+            while i < len(expression):
+                if expression[i] == " ":
                     i += 1
-                values.append(value)
-                i -= 1
-            elif expression[i] == ")":
-                while operators and operators[-1] != "(":
-                    self.apply_operators(operators, values)
-                operators.pop()
-            else:
-                while (operators and self.operator_priority(operators[-1]) >= self.operator_priority(expression[i])):
-                    self.apply_operators(operators, values)
-                operators.append(expression[i])
-            i += 1
+                    continue
+                elif expression[i] == "(":
+                    operators.append("(")
+                elif expression[i].isdigit():
+                    value = 0
+                    while i < len(expression) and expression[i].isdigit():
+                        value = (value * 10) + int(expression[i])
+                        i += 1
+                    values.append(value)
+                    i -= 1
+                elif expression[i] == ")":
+                    while operators and operators[-1] != "(":
+                        self.apply_operators(operators, values)
+                    operators.pop()
+                else:
+                    while (operators and self.operator_priority(operators[-1]) >= self.operator_priority(expression[i])):
+                        self.apply_operators(operators, values)
+                    operators.append(expression[i])
+                i += 1
 
-        while operators:
-            self.apply_operators(operators, values)
+            while operators:
+                self.apply_operators(operators, values)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid operation: {e}")
+        
+        result = str(values[-1])
+        calculation = Calculation(operation=expression, result=result)
+        await CalculationRepository.insert_calculation(calculation)
 
-        return {"operation": expression, "result": str(values[-1])}
+        return {"operation": expression, "result": result}
     
-    def calculate_postfix_operation(expression: str) -> float:
-        pile = []
-        for element in expression:
-            if element.isdigit():
-                pile.append(int(element))
-            else:
-                value_2 = pile.pop()
-                value_1 = pile.pop()
+    async def calculate_postfix_operation(expression: str) -> float:
+        try:
+            pile = []
+            for element in expression:
+                if element == " ":
+                    continue
+                if element.isdigit():
+                    pile.append(int(element))
+                else:
+                    value_2 = pile.pop()
+                    value_1 = pile.pop()
 
-            if element == "+":
-                result = value_1 + value_2
-                pile.append(result)
-            elif element == "-":
-                result = value_1 - value_2
-                pile.append(result)
-            elif element == "*":
-                result = value_1 * value_2
-                pile.append(result)
-            elif element == "/":
-                result = value_1 / value_2
-                pile.append(result)
+                if element == "+":
+                    result = value_1 + value_2
+                    pile.append(result)
+                elif element == "-":
+                    result = value_1 - value_2
+                    pile.append(result)
+                elif element == "*":
+                    result = value_1 * value_2
+                    pile.append(result)
+                elif element == "/":
+                    result = value_1 / value_2
+                    pile.append(result)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid operation: {e}")
+        
+        result = str(pile.pop())
+        calculation = Calculation(operation=expression, result=result)
+        await CalculationRepository.insert_calculation(calculation)
 
-        return {"operation": expression, "result": str(pile.pop())}
+        return {"operation": expression, "result": result}

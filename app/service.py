@@ -1,4 +1,7 @@
 from typing import Dict
+import tkinter as tk
+import csv
+from tkinter import filedialog
 from .models import Calculation
 from fastapi import HTTPException
 from .repository import CalculationRepository
@@ -98,3 +101,25 @@ class Services:
         await CalculationRepository.insert_calculation(calculation)
 
         return {"operation": expression, "result": result}
+    
+    def get_csv_data_from_db():
+        db_data = CalculationRepository.get_all_db_data()
+
+        root = tk.Tk()
+        root.withdraw()
+
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".csv",
+            filetypes=[("CSV files", ".csv"), ("All files", "*.*")],
+            title="Save as..."
+        )
+
+        if file_path:
+            with open(file_path, mode="w", newline="", encoding="utf-8") as file:
+                writer = csv.writer(file)
+                writer.writerow(["id", "operation", "result", "created_at"])
+
+                for calculation in db_data:
+                    writer.writerow([calculation.id, calculation.operation, calculation.result, calculation.created_at])
+
+        return "CSV created !"

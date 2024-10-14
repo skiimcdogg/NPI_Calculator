@@ -41,6 +41,8 @@ Ce projet implémente une calculatrice capable de traiter des expressions en not
 
 Structure ici simplifiée qui permet d'avoir une application plus scalable et testable.
 
+![Alt text](./architecture.svg)
+
 ## Fonctionnalités
 
 ### Interface web

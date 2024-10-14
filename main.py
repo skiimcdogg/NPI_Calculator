@@ -1,8 +1,13 @@
 # main.py
 from fastapi import FastAPI
 from app.routes import router as item_router
+from app.db import create_collection_if_not_exists
 
 app = FastAPI()
+
+@app.lifespan("startup")
+async def startup_db_client():
+    await create_collection_if_not_exists()
 
 # Inclure les routes
 app.include_router(item_router)

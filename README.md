@@ -39,7 +39,7 @@ Ce projet implémente une calculatrice capable de traiter des expressions en not
 - **Services** : Contiennent la logique métier, comme l'évaluation des calculs et la gestion des erreurs.
 - **Repositories** : S'occupent de l'interaction avec MongoDB (insertion et récupération des données).
 
-Structurce ici simplifiée qui permet d'avoir une application scalable et testable.
+Structure ici simplifiée qui permet d'avoir une application plus scalable et testable.
 
 ## Fonctionnalités
 

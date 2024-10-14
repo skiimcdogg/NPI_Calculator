@@ -70,6 +70,8 @@ class Services:
         try:
             pile = []
             for element in expression:
+                if element == " ":
+                    continue
                 if element.isdigit():
                     pile.append(int(element))
                 else:

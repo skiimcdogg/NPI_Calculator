@@ -61,8 +61,6 @@ Une fois les calculs effectués, vous pouvez exporter les résultats sous forme 
 
 Le fichier `docker-compose.yml` inclut une image MongoDB. Le conteneur MongoDB sera automatiquement démarré lors de l'exécution du projet.
 
-Si vous avez déjà une instance MongoDB locale, assurez-vous de mettre à jour le fichier `.env` en conséquence.
-
 ## Support
 
 Pour toute question ou problème, veuillez ouvrir une issue dans le dépôt du projet.
